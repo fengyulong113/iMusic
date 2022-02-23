@@ -1,6 +1,7 @@
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
 import style from '../../assets/global-style';
+import { PropTypes } from 'prop-types';
 
 const loading = keyframes`
   0%, 100% {
@@ -12,7 +13,8 @@ const loading = keyframes`
 `
 const LoadingWrapper = styled.div`
   >div {
-    position: fixed;
+    position: absolute;
+    z-index: 1000;
     left: 0; 
     right: 0;  
     top: 0;
@@ -39,5 +41,13 @@ function Loading(props) {
     </LoadingWrapper>
   );
 }
+
+Loading.defaultProps = {
+  show: true
+};
+
+Loading.propTypes = {
+  show: PropTypes.bool
+};
 
 export default React.memo(Loading);
