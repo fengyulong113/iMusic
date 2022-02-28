@@ -14,6 +14,7 @@ position: relative;
     height: 400px;
     width: 100%;
     background: ${style["theme-color"]};
+    z-index: 1;
   }
   .slider-container {
     position: relative;

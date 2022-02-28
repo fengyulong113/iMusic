@@ -1,28 +1,42 @@
-import React, { useEffect } from "react";
+import React, { useEffect, memo } from "react";
 import Slider from '../../components/slider';
-import { connect } from 'react-redux';
-import * as actionTypes from './store/actionCreators'
 import RecommendList from '../../components/list';
+import { useSelector, useDispatch } from "react-redux";
+import { getBannerList, getRecommendList } from './store/actionCreators'
 import Scroll from '../../baseUI/scroll/index';
+import Loading from '../../baseUI/loading/index';
 import { Content } from './style';
 import { forceCheck } from 'react-lazyload';
-import Loading from '../../baseUI/loading/index';
 import { Route } from 'react-router-dom';
 import Album from "../Album";
 
-function Recommend(props) {
 
-  const { bannerList, recommendList, enterLoading, songsCount } = props;
+const Recommend = memo((props) => {
 
-  const { getBannerDataDispatch, getRecommendListDataDispatch } = props;
+  const bannerList = useSelector(state => {
+    return state.getIn(['recommend', 'bannerList'])
+  });
 
+  const recommendList = useSelector(state => {
+    return state.getIn(['recommend', 'recommendList'])
+  });
+
+  const enterLoading = useSelector(state => {
+    return state.getIn(['recommend', 'enterLoading'])
+  });
+
+  const songsCount = useSelector(state => {
+    return state.getIn(['player', 'playList']).size
+  });
+
+  const dispatch = useDispatch()
 
   useEffect(() => {
     if (!bannerList.size) {
-      getBannerDataDispatch();
+      dispatch(getBannerList())
     }
     if (!recommendList.size) {
-      getRecommendListDataDispatch();
+      dispatch(getRecommendList())
     }
     //eslint-disable-next-line
   }, []);
@@ -42,24 +56,6 @@ function Recommend(props) {
       <Route path='/recommend/:id' component={Album}></Route>
     </Content>
   );
-};
-
-const mapStateToProps = (state) => ({
-  bannerList: state.getIn(['recommend', 'bannerList']),
-  recommendList: state.getIn(['recommend', 'recommendList']),
-  enterLoading: state.getIn(['recommend', 'enterLoading']),
-  songsCount: state.getIn(['player', 'playList']).size,
 });
 
-const mapDispatchToProps = (dispatch) => {
-  return {
-    getBannerDataDispatch() {
-      dispatch(actionTypes.getBannerList());
-    },
-    getRecommendListDataDispatch() {
-      dispatch(actionTypes.getRecommendList());
-    }
-  }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(React.memo(Recommend));
+export default Recommend
