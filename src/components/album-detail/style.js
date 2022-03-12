@@ -1,17 +1,6 @@
 import styled from 'styled-components';
 import style from '../../assets/global-style';
 
-export const Container = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: ${props => props.play > 0?"60px": 0};
-  z-index: 1000;
-  background: #fff;
-  transform-origin: right bottom;
-`;
-
 export const TopDesc = styled.div`
   background-size: 100%;
   padding: 5px 20px;

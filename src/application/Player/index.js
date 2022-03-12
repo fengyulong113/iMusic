@@ -160,6 +160,18 @@ function Player(props) {
     changeCurrentIndexDispatch(index);
   };
 
+  const handleNext = () => {
+    //播放列表只有一首歌时单曲循环
+    if (playList.length === 1) {
+      handleLoop();
+      return;
+    }
+    let index = currentIndex + 1;
+    if (index === playList.length) index = 0;
+    if (!playing) togglePlayingDispatch(true);
+    changeCurrentIndexDispatch(index);
+  };
+
   const changeMode = () => {
     let newMode = (mode + 1) % 3;
     if (newMode === 0) {
@@ -182,18 +194,6 @@ function Player(props) {
     }
     changeModeDispatch(newMode);
     toastRef.current.show();
-  };
-
-  const handleNext = () => {
-    //播放列表只有一首歌时单曲循环
-    if (playList.length === 1) {
-      handleLoop();
-      return;
-    }
-    let index = currentIndex + 1;
-    if (index === playList.length) index = 0;
-    if (!playing) togglePlayingDispatch(true);
-    changeCurrentIndexDispatch(index);
   };
 
   const handleEnd = () => {

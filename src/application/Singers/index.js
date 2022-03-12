@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import Horizen from '../../baseUI/horizen-item';
+import React, { useState, useEffect, memo } from 'react';
 import { categoryTypes, alphaTypes } from '../../api/config';
 import {
   NavContainer,
@@ -18,19 +17,58 @@ import {
   refreshMoreHotSingerList
 } from './store/actionCreators';
 import LazyLoad, { forceCheck } from 'react-lazyload';
+import Horizen from '../../baseUI/horizen-item';
 import Scroll from './../../baseUI/scroll/index';
-import { connect } from 'react-redux';
 import Loading from '../../baseUI/loading';
+import { useSelector, useDispatch } from 'react-redux';
 import { Route } from 'react-router-dom';
 import Singer from '../Singer/index'
 
-function Singers(props) {
+
+const Singers = memo((props) => {
   let [category, setCategory] = useState('');
   let [alpha, setAlpha] = useState('');
 
-  const { singerList, enterLoading, pullUpLoading, pullDownLoading, pageCount, songsCount } = props;
+  const singerList = useSelector(state => state.getIn(['singers', 'singerList']));
+  const enterLoading = useSelector(state => state.getIn(['singers', 'enterLoading']));
+  const pullUpLoading = useSelector(state => state.getIn(['singers', 'pullUpLoading']));
+  const pullDownLoading = useSelector(state => state.getIn(['singers', 'pullDownLoading']));
+  const pageCount = useSelector(state => state.getIn(['singers', 'pageCount']));
+  const songsCount = useSelector(state => state.getIn(['singers', 'songsCount']));
 
-  const { getHotSingerDispatch, updateDispatch, pullDownRefreshDispatch, pullUpRefreshDispatch } = props;
+  const dispatch = useDispatch();
+
+  const getHotSingerDispatch = () => {
+    dispatch(getHotSingerList())
+  };
+
+  const updateDispatch = (category, alpha) => {
+    dispatch(changePageCount(0));
+    dispatch(changeEnterLoading(true));
+    dispatch(getSingerList(category, alpha));
+  }
+
+  // 滑到最底部刷新部分的处理
+  const pullUpRefreshDispatch = (category, alpha, hot, count) => {
+    dispatch(changePullUpLoading(true));
+    dispatch(changePageCount(count + 1));
+    if (hot) {
+      dispatch(refreshMoreHotSingerList());
+    } else {
+      dispatch(refreshMoreSingerList(category, alpha));
+    }
+  }
+
+  //顶部下拉刷新
+  const pullDownRefreshDispatch = (category, alpha) => {
+    dispatch(changePullDownLoading(true));
+    dispatch(changePageCount(0));
+    if (category === '' && alpha === '') {
+      dispatch(getHotSingerList());
+    } else {
+      dispatch(getSingerList(category, alpha));
+    }
+  }
 
   useEffect(() => {
     getHotSingerDispatch();
@@ -102,47 +140,47 @@ function Singers(props) {
       <Route path="/singers/:id" component={Singer}></Route>
     </div>
   )
-}
-
-const mapStateToProps = (state) => ({
-  singerList: state.getIn(['singers', 'singerList']),
-  enterLoading: state.getIn(['singers', 'enterLoading']),
-  pullUpLoading: state.getIn(['singers', 'pullUpLoading']),
-  pullDownLoading: state.getIn(['singers', 'pullDownLoading']),
-  pageCount: state.getIn(['singers', 'pageCount']),
-  songsCount: state.getIn(['player', 'playList']).size
 });
-const mapDispatchToProps = (dispatch) => {
-  return {
-    getHotSingerDispatch() {
-      dispatch(getHotSingerList());
-    },
-    updateDispatch(category, alpha) {
-      dispatch(changePageCount(0));
-      dispatch(changeEnterLoading(true));
-      dispatch(getSingerList(category, alpha));
-    },
-    // 滑到最底部刷新部分的处理
-    pullUpRefreshDispatch(category, alpha, hot, count) {
-      dispatch(changePullUpLoading(true));
-      dispatch(changePageCount(count + 1));
-      if (hot) {
-        dispatch(refreshMoreHotSingerList());
-      } else {
-        dispatch(refreshMoreSingerList(category, alpha));
-      }
-    },
-    //顶部下拉刷新
-    pullDownRefreshDispatch(category, alpha) {
-      dispatch(changePullDownLoading(true));
-      dispatch(changePageCount(0));
-      if (category === '' && alpha === '') {
-        dispatch(getHotSingerList());
-      } else {
-        dispatch(getSingerList(category, alpha));
-      }
-    }
-  }
-};
 
-export default connect(mapStateToProps, mapDispatchToProps)(Singers);
+// const mapStateToProps = (state) => ({
+//   singerList: state.getIn(['singers', 'singerList']),
+//   enterLoading: state.getIn(['singers', 'enterLoading']),
+//   pullUpLoading: state.getIn(['singers', 'pullUpLoading']),
+//   pullDownLoading: state.getIn(['singers', 'pullDownLoading']),
+//   pageCount: state.getIn(['singers', 'pageCount']),
+//   songsCount: state.getIn(['player', 'playList']).size
+// });
+// const mapDispatchToProps = (dispatch) => {
+//   return {
+//     getHotSingerDispatch() {
+//       dispatch(getHotSingerList());
+//     },
+//     updateDispatch(category, alpha) {
+//       dispatch(changePageCount(0));
+//       dispatch(changeEnterLoading(true));
+//       dispatch(getSingerList(category, alpha));
+//     },
+//     // 滑到最底部刷新部分的处理
+//     pullUpRefreshDispatch(category, alpha, hot, count) {
+//       dispatch(changePullUpLoading(true));
+//       dispatch(changePageCount(count + 1));
+//       if (hot) {
+//         dispatch(refreshMoreHotSingerList());
+//       } else {
+//         dispatch(refreshMoreSingerList(category, alpha));
+//       }
+//     },
+//     //顶部下拉刷新
+//     pullDownRefreshDispatch(category, alpha) {
+//       dispatch(changePullDownLoading(true));
+//       dispatch(changePageCount(0));
+//       if (category === '' && alpha === '') {
+//         dispatch(getHotSingerList());
+//       } else {
+//         dispatch(getSingerList(category, alpha));
+//       }
+//     }
+//   }
+// };
+
+export default Singers

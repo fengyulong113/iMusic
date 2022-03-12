@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Container, TopDesc, Menu } from './style';
-import { CSSTransition } from 'react-transition-group';
 import Header from '../../baseUI/header';
 import Scroll from '../../baseUI/scroll/index';
 import { getCount, isEmptyObject } from '../../api/utils';
@@ -8,10 +7,17 @@ import { connect } from 'react-redux';
 import { changeEnterLoading, getAlbumList } from './store/actionCreators';
 import Loading from '../../baseUI/loading/index';
 import SongsList from '../SongsList/index';
+import { HEADER_HEIGHT } from '../../api/config';
+import style from "../../assets/global-style";
+import MusicNote from '../../baseUI/music-note';
+
 
 function Album(props) {
 
-  const [showStatus, setShowStatus] = useState(true);
+  const [title, setTitle] = useState('歌单');
+  const headerEl = useRef();
+  const musicNoteRef = useRef();
+
 
   const { currentAlbum: currentAlbumImmutable, enterLoading, songsCount } = props;
   const { getAlbumDataDispatch } = props;
@@ -24,9 +30,30 @@ function Album(props) {
 
   let currentAlbum = currentAlbumImmutable.toJS();
 
-  const handleBack = useCallback (() => {
-    setShowStatus (false);
+  const handleBack = useCallback(() => {
+    props.history.goBack()
   }, []);
+
+  const handleScroll = useCallback((pos) => {
+    let minScrollY = -HEADER_HEIGHT;
+    let percent = Math.abs(pos.y / minScrollY);
+    let headerDom = headerEl.current;
+    if (pos.y < minScrollY) {
+      headerDom.style.backgroundColor = style["theme-color"];
+      headerDom.style.opacity = Math.min(1, (percent - 1) / 2);
+      setTitle(currentAlbum && currentAlbum.name);
+      // setIsMarquee(true);
+    } else {
+      headerDom.style.backgroundColor = "";
+      headerDom.style.opacity = 1;
+      setTitle("歌单");
+      // setIsMarquee(false);
+    }
+  }, [currentAlbum]);
+
+  const musicAnimation = (x, y) => {
+    musicNoteRef.current.startAnimation({ x, y })
+  }
 
   const renderTopDesc = () => {
     return (
@@ -79,45 +106,37 @@ function Album(props) {
   };
 
   return (
-    <CSSTransition
-      in={showStatus}
-      timeout={300}
-      classNames="fly"
-      appear={true}
-      unmountOnExit
-      onExited={props.history.goBack}
-    >
-      <Container play={songsCount}>
-        <Header title={'返回'} handleClick={handleBack}></Header>
-        {
-          !isEmptyObject(currentAlbum) ? (
-            <Scroll bounceTop={false}>
-              <div>
-                {renderTopDesc()}
-                {renderMenu()}
-                <SongsList
-                  songs={currentAlbum.tracks}
-                  collectCount={currentAlbum.subscribedCount}
-                  showCollect={true}
-                  showBackground={true}
-                ></SongsList>
-              </div>
-            </Scroll>
-          ) : null
-        }
-        {
-          enterLoading ? <Loading></Loading> : null
-        }
-      </Container>
-    </CSSTransition>
-
+    <Container play={songsCount}>
+      <Header ref={headerEl} title={title} handleClick={handleBack}></Header>
+      {
+        !isEmptyObject(currentAlbum) ? (
+          <Scroll bounceTop={false} onScroll={handleScroll}>
+            <div>
+              {renderTopDesc()}
+              {renderMenu()}
+              <SongsList
+                songs={currentAlbum.tracks}
+                collectCount={currentAlbum.subscribedCount}
+                showCollect={true}
+                showBackground={true}
+                musicAnimation={musicAnimation}
+              ></SongsList>
+            </div>
+          </Scroll>
+        ) : null
+      }
+      {
+        enterLoading ? <Loading></Loading> : null
+      }
+      <MusicNote ref={musicNoteRef}></MusicNote>
+    </Container>
   )
 };
 
 const mapStateToProps = (state) => ({
   currentAlbum: state.getIn(['album', 'currentAlbum']),
   enterLoading: state.getIn(['album', 'enterLoading']),
-  songsCount: state.getIn(['player','playList']).size
+  songsCount: state.getIn(['player', 'playList']).size
 });
 
 const mapDispatchToProps = (dispatch) => {

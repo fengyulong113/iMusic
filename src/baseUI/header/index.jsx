@@ -35,13 +35,13 @@ const Header = React.forwardRef((props, ref) => {
 })
 
 Header.defaultProps = {
-  handleClick: () => {},
+  handleClick: () => { },
   title: "标题",
 }
 
 Header.propTypes = {
   handleClick: PropTypes.func,
-  title: PropTypes.string
+  title: PropTypes.string,
 }
 
 export default React.memo(Header)

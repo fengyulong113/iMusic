@@ -1,18 +1,17 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { CSSTransition } from "react-transition-group";
+import React, { useEffect, useRef, useCallback } from "react";
 import { Container } from "./style";
 import { HEADER_HEIGHT } from "./../../api/config";
 import { ImgWrapper, CollectButton, SongListWrapper, BgLayer } from "./style";
 import Header from "../../baseUI/header/index";
 import Scroll from "../../baseUI/scroll/index";
-import SongsList from "../SongsList";
-import { connect } from 'react-redux';
 import Loading from "./../../baseUI/loading/index";
+import SongsList from "../SongsList";
+import MusicNote from "../../baseUI/music-note/index";
+import { connect } from 'react-redux';
 import { getSingerInfo, changeEnterLoading } from "./store/actionCreators";
 
 function Singer(props) {
   const initialHeight = useRef(0);
-  const [showStatus, setShowStatus] = useState(true);
 
   const {
     artist: immutableArtist,
@@ -32,6 +31,7 @@ function Singer(props) {
   const songScroll = useRef();
   const header = useRef();
   const layer = useRef();
+  const musicNoteRef = useRef();
 
   //往上偏移的尺寸，露出圆角
   const OFFSET = 5;
@@ -87,44 +87,42 @@ function Singer(props) {
     }
   }, [])
 
-  const setShowStatusFalse = useCallback(() => {
-    setShowStatus(false);
+
+  const musicAnimation = (x, y) => {
+    musicNoteRef.current.startAnimation({ x, y });
+  };
+
+  const goBack = useCallback(() => {
+    props.history.goBack()
   }, []);
 
   return (
-    <CSSTransition
-      in={showStatus}
-      timeout={300}
-      classNames="fly"
-      appear={true}
-      unmountOnExit
-      onExited={() => props.history.goBack()}
-    >
-      <Container play={songsCount}>
-        <Header
-          handleClick={setShowStatusFalse}
-          title={artist.name}
-          ref={header}
-        ></Header>
-        <ImgWrapper ref={imageWrapper} bgUrl={artist.picUrl}>
-          <div className="filter"></div>
-        </ImgWrapper>
-        <CollectButton ref={collectButton}>
-          <i className="iconfont">&#xe62d;</i>
-          <span className="text">收藏</span>
-        </CollectButton>
-        <BgLayer ref={layer}></BgLayer>
-        <SongListWrapper ref={songScrollWrapper}>
-          <Scroll ref={songScroll} onScroll={handleScroll}>
-            <SongsList
-              songs={songs}
-              showCollect={false}
-            ></SongsList>
-          </Scroll>
-        </SongListWrapper>
-        {loading ? (<Loading></Loading>) : null}
-      </Container>
-    </CSSTransition>
+    <Container play={songsCount}>
+      <Header
+        handleClick={goBack}
+        title={artist.name}
+        ref={header}
+      ></Header>
+      <ImgWrapper ref={imageWrapper} bgUrl={artist.picUrl}>
+        <div className="filter"></div>
+      </ImgWrapper>
+      <CollectButton ref={collectButton}>
+        <i className="iconfont">&#xe62d;</i>
+        <span className="text">收藏</span>
+      </CollectButton>
+      <BgLayer ref={layer}></BgLayer>
+      <SongListWrapper ref={songScrollWrapper}>
+        <Scroll ref={songScroll} onScroll={handleScroll}>
+          <SongsList
+            songs={songs}
+            showCollect={false}
+            musicAnimation={musicAnimation}
+          ></SongsList>
+        </Scroll>
+      </SongListWrapper>
+      {loading ? (<Loading></Loading>) : null}
+      <MusicNote ref={musicNoteRef}></MusicNote>
+    </Container>
   )
 }
 

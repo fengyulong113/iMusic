@@ -13,21 +13,10 @@ import Album from "../Album";
 
 const Recommend = memo((props) => {
 
-  const bannerList = useSelector(state => {
-    return state.getIn(['recommend', 'bannerList'])
-  });
-
-  const recommendList = useSelector(state => {
-    return state.getIn(['recommend', 'recommendList'])
-  });
-
-  const enterLoading = useSelector(state => {
-    return state.getIn(['recommend', 'enterLoading'])
-  });
-
-  const songsCount = useSelector(state => {
-    return state.getIn(['player', 'playList']).size
-  });
+  const bannerList = useSelector(state => state.getIn(['recommend', 'bannerList']));
+  const recommendList = useSelector(state => state.getIn(['recommend', 'recommendList']));
+  const enterLoading = useSelector(state => state.getIn(['recommend', 'enterLoading']));
+  const songsCount = useSelector(state => state.getIn(['player', 'playList']).size);
 
   const dispatch = useDispatch()
 

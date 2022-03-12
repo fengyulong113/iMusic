@@ -1,4 +1,3 @@
-import { RankTypes } from "./config";
 
 export const getCount = (count) => {
   if (count < 0) return;
@@ -33,13 +32,6 @@ export const filterIndex = rankList => {
   }
 };
 
-//找出排行榜的编号
-export const filterIdx = name => {
-  for (var key in RankTypes) {
-    if (RankTypes[key] === name) return key;
-  }
-  return null;
-};
 
 // 处理歌手列表拼接歌手名字
 export const getName = list => {
